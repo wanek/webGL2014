@@ -13,7 +13,7 @@
   attribute vec3 aVertexPosition;
   attribute vec4 aVertexColor;
   uniform mat4 modelViewMatrix;
-  uniform mat4 projectionMatrix;  
+  uniform mat4 projectionMatrix;
   varying lowp vec4 vColor;
   void main(void) {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(aVertexPosition, 1.0);
@@ -23,10 +23,17 @@
 <script type="text/javascript">
 var gl;
 var program;
+var isAndroid = -1;
 function initGL() {
   var canvas = document.getElementById("canvas1");
+  var ua = navigator.userAgent.toLowerCase();
+  isAndroid = ua.indexOf("android") > -1;
+  if(isAndroid) {
+    canvas.height = window.innerHeight-200;
+  } else {
+    canvas.height = window.innerHeight;
+  }
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight-200; // To be changed later, currently to accomidate joysticks.
   try {
       gl = canvas.getContext("experimental-webgl");
       gl.viewportWidth = canvas.width;
@@ -166,7 +173,6 @@ function initBuffers() {
 function degToRad(degrees) {
   return degrees * Math.PI / 180;
 }
-
 var pitch = 0.0;
 var pitchRate = 0.0;
 var yaw = 0.0;
@@ -208,57 +214,72 @@ function handleMouseDown(event) {
   lastMouseX = event.clientX;
   lastMouseY = event.clientY;
 }
-function viewHandlerDown(event) {
+function viewHandlerDown(e) {
   viewDown = true;
-  var rect = document.getElementById("moveCenter").getBoundingClientRect();
-  viewX = event.clientX - (rect.right-rect.width/2);
-  viewY = (rect.bottom-rect.height/2)- event.clientY;
+  var touchobj = e.changedTouches[0];
+  var startx = parseInt(touchobj.clientX);
+  var starty = parseInt(touchobj.clientY);
+  var rect = document.getElementById("viewCenter").getBoundingClientRect();
+  viewX = startx - (rect.right-rect.width/2);
+  viewY = (rect.bottom-rect.height/2) - starty;
 }  
-function moveHandlerDown(event) {
+function moveHandlerDown(e) {
   moveDown = true;
+  var touchobj = e.changedTouches[0];
+  var startx = parseInt(touchobj.clientX);
+  var starty = parseInt(touchobj.clientY);
   var rect = document.getElementById("moveCenter").getBoundingClientRect();
-  moveX = event.clientX - (rect.right-rect.width/2);
-  moveY = (rect.bottom-rect.height/2)- event.clientY;
+  moveX = startx - (rect.right-rect.width/2);
+  moveY = (rect.bottom-rect.height/2) - starty;
 }
 var newRotationMatrix = mat4.create();
-function handleMouseMove(event) {
-  if (!mouseDown && !moveDown && !viewDown) {
+function handleTouchMove(e) {
+    if (!moveDown && !viewDown) {
       return;
   }
+  var touchobj = e.changedTouches[0];    
+  var startx = parseInt(touchobj.clientX);
+  var starty = parseInt(touchobj.clientY);
   if (moveDown) {
-    if (moveX > -40 && moveX < 0 + 40 && moveY > -40 && moveY < 40) {
-      x = x + (moveX/80);
-      y = y + (moveY/80);
-    }
-  }
-  if (mouseDown) {
-    var newX = event.clientX;
-    var newY = event.clientY;
-    var deltaX = newX - lastMouseX
-    var newRotationMatrix = mat4.create();
-    mat4.identity(newRotationMatrix);
-    mat4.rotate(newRotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
-    var deltaY = newY - lastMouseY;
-    mat4.rotate(newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
-    mat4.multiply(newRotationMatrix, rotationMatrix, rotationMatrix);
-    lastMouseX = newX;
-    lastMouseY = newY;
+    var rect = document.getElementById("moveCenter").getBoundingClientRect();
+    moveX = startx - (rect.right-rect.width/2);
+    moveY = (rect.bottom-rect.height/2) - starty;
+    x = x + 0.0007*moveX;
+    y = y + 0.0007*moveY;
   }
   if (viewDown) {
-    if (viewX > 0) {
-      yawRate = 0.1;
+    var rect = document.getElementById("viewCenter").getBoundingClientRect();
+    viewX = startx - (rect.right-rect.width/2);
+    viewY = (rect.bottom-rect.height/2) - starty;
+    if (viewX < 0) {
+      yawRate = 0.009;
     } else {
-      yawRate = -0.1;
+      yawRate = -0.009;
     }
     if (viewY > 0) {
-      pitchRate = 0.1;
+      pitchRate = 0.009;
     } else {
-      pitchRate = -0.1;
+      pitchRate = -0.009;
     }
-    console.log(yawRate + " " + pitchRate);
   }
 }
-function handleMouseUp(event) {
+function handleMouseMove(event) {
+  if (!mouseDown) {
+      return;
+  }
+  var newX = event.clientX;
+  var newY = event.clientY;
+  var deltaX = newX - lastMouseX
+  var newRotationMatrix = mat4.create();
+  mat4.identity(newRotationMatrix);
+  mat4.rotate(newRotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
+  var deltaY = newY - lastMouseY;
+  mat4.rotate(newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
+  mat4.multiply(newRotationMatrix, rotationMatrix, rotationMatrix);
+  lastMouseX = newX;
+  lastMouseY = newY;
+}
+function handleUp(event) {
   mouseDown = false;
   moveDown = false;
   viewDown = false;
@@ -300,7 +321,25 @@ function tick() {
   }
   lastTime = timeNow;
 }
+function handleReset(e) {
+  viewX = 0;
+  viewY = 0;
+  moveX = 0;
+  moveY = 0;
+  y = 0;
+  x = 0;
+  z = -7.0;
+  yaw = 0;
+  pitch = 0;
+}
 function webGLStart() {
+  var ua = navigator.userAgent.toLowerCase();
+  isAndroid = ua.indexOf("android") > -1;
+  if(!isAndroid) {
+    document.getElementById("viewStick").style.display = "none";
+    document.getElementById("moveStick").style.display = "none";
+    document.getElementById("reset").style.display = "none";
+  }
   initGL();
   initShaders();
   initBuffers();
@@ -308,29 +347,54 @@ function webGLStart() {
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
+  document.getElementById("viewStick").addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    viewHandlerDown(e);
+  }, false);
+  document.getElementById("reset").addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    handleReset(e);
+  }, false);
+  document.getElementById("moveStick").addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    moveHandlerDown(e);
+  }, false);
+  document.getElementById("viewStick").addEventListener('touchleave', function(e) {
+    e.preventDefault();
+    handleUp();
+  }, false);
+  document.getElementById("moveStick").addEventListener('touchleave', function(e) {
+    e.preventDefault();
+    handleUp();
+  }, false);
+  document.addEventListener('touchmove', function(e){
+    e.preventDefault();
+    handleTouchMove(e);
+   }, false);
   document.getElementById("canvas1").onmousedown = handleMouseDown;
-  document.getElementById("viewStick").onmousedown = viewHandlerDown;
-  document.getElementById("moveStick").onmousedown = moveHandlerDown;
-  document.onmouseup = handleMouseUp;
+  document.getElementById("reset").onmousedown = handleReset;
+  document.onmouseup = handleUp;
   document.onmousemove = handleMouseMove;
   document.onkeydown = handleKeyDown;
   tick();
 }
 </script>
-
 </head>
 <body onload="webGLStart();" bgcolor="#000000" style="width: 100%; height: 100%; padding: 0px; border: 0px; margin: 0px; overflow: hidden;">
   <center>
     <canvas id="canvas1" style="padding=0.0em" width="500" height="500"></canvas>
     </br>
-    <svg id="viewStick" width="100"height="100" style="padding-left:50px;padding-right:50px;">
-      <circle cx="50" cy="50" r="40"  stroke="black" stroke-width="3" fill="#610B0B"/>
-      <circle cx="50" cy="50" r="35"  stroke="black" stroke-width="2" fill="#B40404"/>
+    <svg id="viewStick" width="200"height="200" style="padding-left:50px;padding-right:50px;">
+      <circle cx="100" cy="100" r="100"  stroke="black" stroke-width="3" fill="#610B0B"/>
+      <circle id="viewCenter" cx="100" cy="100" r="95"  stroke="black" stroke-width="2" fill="#B40404"/>
     </svg>
-    <svg id="moveStick" width="100" height="100" style="padding-left:50px;padding-right:50px;">
-      <circle cx="50" cy="50" r="40" style="padding-left:50px;" stroke="black" stroke-width="3" fill="#610B0B"/>
-      <circle id="moveCenter" cx="50" cy="50" r="35"  stroke="black" stroke-width="2" fill="#B40404"/>
+    <svg id="moveStick" width="200" height="200" style="padding-left:50px;padding-right:50px;">
+      <circle cx="100" cy="100" r="100" style="padding-left:50px;" stroke="black" stroke-width="3" fill="#610B0B"/>
+      <circle id="moveCenter" cx="100" cy="100" r="95"  stroke="black" stroke-width="2" fill="#B40404"/>
     </svg>
+  <svg id="reset" width="100" height="100" style="padding-left:50px;padding-right:50px;">
+    <circle cx="50" cy="50" r="50" style="padding-left:50px;" stroke="black" stroke-width="3" fill="#610B0B"/>
+  </svg>
   </center>
 </body>
 </html>
