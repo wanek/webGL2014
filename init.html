@@ -1,8 +1,8 @@
 <html>
 <head>
 <title>Initial WebGL Modeling</title>
-<script type="text/javascript" src="{{STATIC_URL}}/JS/gl-matrix-min.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}/JS/webgl-utils.js"></script>
+<script type="text/javascript" src="gl-matrix-min.js"></script>
+<script type="text/javascript" src="webgl-utils.js"></script>
 <script id="shader-fs" type="x-shader/x-fragment">
   varying lowp vec4 vColor;
   void main(void) {
@@ -21,381 +21,459 @@
   }
 </script>
 <script type="text/javascript">
+var isAndroid = -1;
 var gl;
 var program;
-var isAndroid = -1;
-function initGL() {
-  var canvas = document.getElementById("canvas1");
-  var ua = navigator.userAgent.toLowerCase();
-  isAndroid = ua.indexOf("android") > -1;
-  if(isAndroid) {
-    canvas.height = window.innerHeight-200;
-  } else {
-    canvas.height = window.innerHeight;
-  }
-  canvas.width = window.innerWidth;
-  try {
-      gl = canvas.getContext("experimental-webgl");
-      gl.viewportWidth = canvas.width;
-      gl.viewportHeight = canvas.height;
-  } catch (e) {
-  }
-  if (!gl) {
-      alert("Could not initialise WebGL. Visit http://caniuse.com/webgl to check browser support.");
-  }
-}
-function getShader(id) {
-  var shaderScript = document.getElementById(id);
-  if (!shaderScript) {
-    return null;
-  }
-  var str = "";
-  var k = shaderScript.firstChild;
-  while (k) {
-    if (k.nodeType == 3) {
-        str += k.textContent;
-    }
-    k = k.nextSibling;
-  }
-  var shader;
-  if (shaderScript.type == "x-shader/x-fragment") {
-    shader = gl.createShader(gl.FRAGMENT_SHADER);
-  } else if (shaderScript.type == "x-shader/x-vertex") {
-    shader = gl.createShader(gl.VERTEX_SHADER);
-  } else {
-    return null;
-  }
-  gl.shaderSource(shader, str);
-  gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    alert(gl.getShaderInfoLog(shader));
-    return null;
-  }
-  return shader;
-}
-function initShaders() {
-  var fragmentShader = getShader("shader-fs");
-  var vertexShader = getShader("shader-vs");
-  program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    alert("Could not initialise shaders");
-  }
-  gl.useProgram(program);
-  program.vertexPositionAttribute = gl.getAttribLocation(program, "aVertexPosition");
-  gl.enableVertexAttribArray(program.vertexPositionAttribute);
-  program.vertexColorAttribute = gl.getAttribLocation(program, "aVertexColor");
-  gl.enableVertexAttribArray(program.vertexColorAttribute);
-  program.pMatrixUniform = gl.getUniformLocation(program, "projectionMatrix");
-  program.mvMatrixUniform = gl.getUniformLocation(program, "modelViewMatrix");
-}
-function setMatrixUniforms() {
-  gl.uniformMatrix4fv(program.pMatrixUniform, false, projectionMatrix);
-  gl.uniformMatrix4fv(program.mvMatrixUniform, false, modelViewMatrix);
-}
-var cubeVerticesBuffer;
-var cubeVerticesColorBuffer;
-var cubeVerticesIndexBuffer;
-var hallwayVerticesBuffer;
-var hallwayVerticesColorbuffer;
-var hallwayVerticesIndexBuffer;
 var modelViewMatrix;
 var projectionMatrix;
-function initBuffers() {
-  modelViewMatrix = mat4.create();
-  projectionMatrix = mat4.create();
-  initHallwayBuffers();
-  initCubeBuffers();
-}
-function initHallwayBuffers() {
-  hallwayVerticesBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, hallwayVerticesBuffer);
-  var vertices = [
-    // Bottom face
-    -1.0, -0.1, -12.0,
-     1.0, -0.1, -12.0,
-     1.0, -0.1,  12.0,
-    -1.0, -0.1,  12.0,
-    // Right face
-     1.0, -0.1, -12.0,
-     1.0,  1.0, -12.0,
-     1.0,  1.0,  12.0,
-     1.0, -0.1,  12.0,
-    // Left face
-    -1.0, -0.1, -12.0,
-    -1.0, -0.1,  12.0,
-    -1.0,  1.0,  12.0,
-    -1.0,  1.0, -12.0
-  ];
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  var colors = [
-    [0.0,  0.0,  1.0,  1.0],  // Bottom face: blue
-    [1.0,  1.0,  0.0,  1.0],  // Right face: yellow
-    [1.0,  0.0,  1.0,  1.0]   // Left face: purple
-  ];
-  var generatedColors = [];
-  for (j=0; j<6; j++) {
-    var c = colors[j];
-    for (var i=0; i<4; i++) {
-      generatedColors = generatedColors.concat(c);
-    }
-  }
-  hallwayVerticesColorbuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, hallwayVerticesColorbuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(generatedColors), gl.STATIC_DRAW);
-  hallwayVerticesIndexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, hallwayVerticesIndexBuffer);
-  var hallwayVertexIndeces = [
-    0,  1,  2,      0,  2,  3,  // Bottom
-    4,  5,  6,      4,  6,  7,  // Right
-    8,  9,  10,     8,  10, 11,  // Left
-  ]
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hallwayVertexIndeces), gl.STATIC_DRAW);
-}
-function initCubeBuffers() {
-  cubeVerticesBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesBuffer);
-  var vertices = [
-    // Front face
-    -0.1, -0.1,  -11.0,
-    -0.1,  0.1,  -11.0,
-     0.1,  0.1,  -11.0,
-     0.1,  -0.1,  -11.0,
-    // Back face
-    -0.1, -0.1, -12.0,
-    -0.1,  0.1, -12.0,
-     0.1,  0.1, -12.0,
-     0.1, -0.1, -12.0,
-    // Top face
-    -0.1,  0.1, -12.0,
-    -0.1,  0.1,  -11.0,
-     0.1,  0.1,  -11.0,
-     0.1,  0.1, -12.0,
-    // Bottom face
-    -0.1, -0.1, -12.0,
-     0.1, -0.1, -12.0,
-     0.1, -0.1,  -11.0,
-    -0.1, -0.1,  -11.0,
-    // Right face
-     0.1, -0.1, -12.0,
-     0.1,  0.1, -12.0,
-     0.1,  0.1,  -11.0,
-     0.1, -0.1,  -11.0,
-    // Left face
-    -0.1, -0.1, -12.0,
-    -0.1, -0.1,  -11.0,
-    -0.1,  0.1,  -11.0,
-    -0.1,  0.1, -12.0
-  ];
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  var colors = [
-    [1.0,  1.0,  1.0,  1.0],  // Front face: white
-    [1.0,  0.0,  0.0,  1.0],  // Back face: red
-    [0.0,  1.0,  0.0,  1.0],  // Top face: green
-    [0.0,  0.0,  1.0,  1.0],  // Bottom face: blue
-    [1.0,  1.0,  0.0,  1.0],  // Right face: yellow
-    [1.0,  0.0,  1.0,  1.0]   // Left face: purple
-  ];
-  var generatedColors = [];
-  for (j=0; j<6; j++) {
-    var c = colors[j];
-    for (var i=0; i<4; i++) {
-      generatedColors = generatedColors.concat(c);
-    }
-  }
-  cubeVerticesColorBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesColorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(generatedColors), gl.STATIC_DRAW);
-  cubeVerticesIndexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVerticesIndexBuffer);
-  var cubeVertexIndices = [
-    0,  1,  2,      0,  2,  3,  // Front
-    4,  5,  6,      4,  6,  7,  // Back
-    8,  9,  10,     8,  10, 11,  // Top
-    12, 13, 14,     12, 14, 15,  // Bottom
-    16, 17, 18,     16, 18, 19,  // Right
-    20, 21, 22,     20, 22, 23  // Left
-  ]
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
-}
-function degToRad(degrees) {
-  return degrees * Math.PI / 180;
-}
-var pitch = 0.0;
-var pitchRate = 0.0;
-var yaw = 0.0;
-var yawRate = 0.0;
-var mouseDown = false;
-var viewDown = false;
-var moveDown = false;
-var lastMouseX = null;
-var lastMouseY = null;
-var moveX = null;
-var moveY = null;
-var viewX = null;
-var viewY = null;
 var rotationMatrix = mat4.create();
 mat4.identity(rotationMatrix);
-function handleKeyDown(event) {
-  if (event.keyCode == 37) {
-    // Left Arrow Key (Move left)
-    x = x + 0.1;
-  } else if (event.keyCode == 38) {
-    // Up Arrow Key (Move up)
-    z = z + 0.2;
-  } else if (event.keyCode == 39) {
-    // Right Arrow Key (Move right)
-    x = x - 0.1;
-  } else if (event.keyCode == 40) {
-    // Down Arrow Key (Move down)
-    z = z - 0.2;
-  } else if (event.keyCode == 87) {
-    // W (View up)
-    pitchRate = -0.1;
-  } else if (event.keyCode == 83) {
-    // S (View down)
-    pitchRate = 0.1;
-  } else if (event.keyCode == 65) {
-    // A (View left)
-    yawRate = -0.1;
-  } else if (event.keyCode == 68) {
-    // D (View right)
-    yawRate = 0.1;
-  }
+var initLib = {
+  initGL: function() {
+    var canvas = document.getElementById("canvas1");
+    var ua = navigator.userAgent.toLowerCase();
+    isAndroid = ua.indexOf("android") > -1;
+    if(isAndroid) {
+      canvas.height = window.innerHeight-200;
+    } else {
+      canvas.height = window.innerHeight;
+    }
+    canvas.width = window.innerWidth;
+    try {
+        gl = canvas.getContext("experimental-webgl");
+        gl.viewportWidth = canvas.width;
+        gl.viewportHeight = canvas.height;
+    } catch (e) {
+    }
+    if (!gl) {
+        alert("Could not initialise WebGL. Visit http://caniuse.com/webgl to check browser support.");
+    }
+  },
+  getShader: function(id) {
+    var shaderScript = document.getElementById(id);
+    if (!shaderScript) {
+      return null;
+    }
+    var str = "";
+    var k = shaderScript.firstChild;
+    while (k) {
+      if (k.nodeType == 3) {
+          str += k.textContent;
+      }
+      k = k.nextSibling;
+    }
+    var shader;
+    if (shaderScript.type == "x-shader/x-fragment") {
+      shader = gl.createShader(gl.FRAGMENT_SHADER);
+    } else if (shaderScript.type == "x-shader/x-vertex") {
+      shader = gl.createShader(gl.VERTEX_SHADER);
+    } else {
+      return null;
+    }
+    gl.shaderSource(shader, str);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      alert(gl.getShaderInfoLog(shader));
+      return null;
+    }
+    return shader;
+  },
+  initShaders: function() {
+    var fragmentShader = initLib.getShader("shader-fs");
+    var vertexShader = initLib.getShader("shader-vs");
+    program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      alert("Could not initialise shaders");
+    }
+    gl.useProgram(program);
+    program.vertexPositionAttribute = gl.getAttribLocation(program, "aVertexPosition");
+    gl.enableVertexAttribArray(program.vertexPositionAttribute);
+    program.vertexColorAttribute = gl.getAttribLocation(program, "aVertexColor");
+    gl.enableVertexAttribArray(program.vertexColorAttribute);
+    program.pMatrixUniform = gl.getUniformLocation(program, "projectionMatrix");
+    program.mvMatrixUniform = gl.getUniformLocation(program, "modelViewMatrix");
+  },
 }
-function handleMouseDown(event) {
-  mouseDown = true;
-  lastMouseX = event.clientX;
-  lastMouseY = event.clientY;
+var bufferLib = {
+  cubeVerticesBuffer: 0,
+  cubeVerticesColorBuffer: 0,
+  cubeVerticesIndexBuffer: 0,
+  hallwayVerticesBuffer: 0,
+  hallwayVerticesColorbuffer: 0,
+  hallwayVerticesIndexBuffer: 0,
+  pyramidVertexPositionBuffer: 0,
+  pyramidVertexColorBuffer: 0,
+  initBuffers: function() {
+    modelViewMatrix = mat4.create();
+    projectionMatrix = mat4.create();
+    bufferLib.initHallwayBuffers();
+    bufferLib.initCubeBuffers();
+    bufferLib.initPyramidBuffers();
+  },
+  initPyramidBuffers: function() {
+    bufferLib.pyramidVertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.pyramidVertexPositionBuffer);
+    var vertices = [
+        // Front face
+         0.0,  0.5,  11.5,
+        -0.5, -0.1,  12,
+         0.5, -0.1,  12,
+        // Right face
+         0.0,  0.5,  11.5,
+         0.5, -0.1,  12,
+         0.5, -0.1,  11,
+        // Back face
+         0.0,  0.5,  11.5,
+         0.5, -0.1,  11,
+        -0.5, -0.1,  11,
+        // Left face
+         0.0,  0.5,  11.5,
+        -0.5, -0.1,  11,
+        -0.5, -0.1,  12
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    bufferLib.pyramidVertexColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.pyramidVertexColorBuffer);
+    var colors = [
+        // Front face
+        1.0, 0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0, 1.0,
+        // Right face
+        1.0,  0.0,  1.0,  1.0,
+        1.0,  0.0,  1.0,  1.0,
+        1.0,  0.0,  1.0,  1.0,
+        // Back face
+        0.0, 1.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 1.0,
+        // Left face
+        1.0,  1.0,  0.0,  1.0,
+        1.0,  1.0,  0.0,  1.0,
+        1.0,  1.0,  0.0,  1.0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+  },
+  initHallwayBuffers: function() {
+    bufferLib.hallwayVerticesBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.hallwayVerticesBuffer);
+    var vertices = [
+      // Bottom face
+      -1.0, -0.1, -12.0,
+       1.0, -0.1, -12.0,
+       1.0, -0.1,  12.0,
+      -1.0, -0.1,  12.0,
+      // Right face
+       1.0, -0.1, -12.0,
+       1.0,  1.0, -12.0,
+       1.0,  1.0,  12.0,
+       1.0, -0.1,  12.0,
+      // Left face
+      -1.0, -0.1, -12.0,
+      -1.0, -0.1,  12.0,
+      -1.0,  1.0,  12.0,
+      -1.0,  1.0, -12.0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    var colors = [
+      [0.0,  0.0,  1.0,  1.0],  // Bottom face: blue
+      [1.0,  1.0,  0.0,  1.0],  // Right face: yellow
+      [1.0,  0.0,  1.0,  1.0]   // Left face: purple
+    ];
+    var generatedColors = [];
+    for (j=0; j<6; j++) {
+      var c = colors[j];
+      for (var i=0; i<4; i++) {
+        generatedColors = generatedColors.concat(c);
+      }
+    }
+    bufferLib.hallwayVerticesColorbuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.hallwayVerticesColorbuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(generatedColors), gl.STATIC_DRAW);
+    bufferLib.hallwayVerticesIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferLib.hallwayVerticesIndexBuffer);
+    var hallwayVertexIndeces = [
+      0,  1,  2,      0,  2,  3,  // Bottom
+      4,  5,  6,      4,  6,  7,  // Right
+      8,  9,  10,     8,  10, 11,  // Left
+    ]
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(hallwayVertexIndeces), gl.STATIC_DRAW);
+  },
+  initCubeBuffers: function() {
+    bufferLib.cubeVerticesBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.cubeVerticesBuffer);
+    var vertices = [
+      // Front face
+      -0.25, -0.1,  -11.5,
+      -0.25,  0.4,  -11.5,
+       0.25,  0.4,  -11.5,
+       0.25,  -0.1,  -11.5,
+      // Back face
+      -0.25, -0.1, -12.0,
+      -0.25,  0.4, -12.0,
+       0.25,  0.4, -12.0,
+       0.25, -0.1, -12.0,
+      // Top face
+      -0.25,  0.4, -12.0,
+      -0.25,  0.4,  -11.5,
+       0.25,  0.4,  -11.5,
+       0.25,  0.4, -12.0,
+      // Bottom face
+      -0.25, -0.1, -12.0,
+       0.25, -0.1, -12.0,
+       0.25, -0.1,  -11.5,
+      -0.25, -0.1,  -11.5,
+      // Right face
+       0.25, -0.1, -12.0,
+       0.25,  0.4, -12.0,
+       0.25,  0.4,  -11.5,
+       0.25, -0.1,  -11.5,
+      // Left face
+      -0.25, -0.1, -12.0,
+      -0.25, -0.1,  -11.5,
+      -0.25,  0.4,  -11.5,
+      -0.25,  0.4, -12.0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    var colors = [
+      [1.0,  1.0,  1.0,  1.0],  // Front face: white
+      [1.0,  0.0,  0.0,  1.0],  // Back face: red
+      [0.0,  1.0,  0.0,  1.0],  // Top face: green
+      [0.0,  0.0,  1.0,  1.0],  // Bottom face: blue
+      [1.0,  1.0,  0.0,  1.0],  // Right face: yellow
+      [1.0,  0.0,  1.0,  1.0]   // Left face: purple
+    ];
+    var generatedColors = [];
+    for (j=0; j<6; j++) {
+      var c = colors[j];
+      for (var i=0; i<4; i++) {
+        generatedColors = generatedColors.concat(c);
+      }
+    }
+    bufferLib.cubeVerticesColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.cubeVerticesColorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(generatedColors), gl.STATIC_DRAW);
+    bufferLib.cubeVerticesIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferLib.cubeVerticesIndexBuffer);
+    var cubeVertexIndices = [
+      0,  1,  2,      0,  2,  3,  // Front
+      4,  5,  6,      4,  6,  7,  // Back
+      8,  9,  10,     8,  10, 11,  // Top
+      12, 13, 14,     12, 14, 15,  // Bottom
+      16, 17, 18,     16, 18, 19,  // Right
+      20, 21, 22,     20, 22, 23  // Left
+    ]
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
+  },
 }
-function viewHandlerDown(e) {
-  viewDown = true;
-  var touchobj = e.changedTouches[0];
-  var startx = parseInt(touchobj.clientX);
-  var starty = parseInt(touchobj.clientY);
-  var rect = document.getElementById("viewCenter").getBoundingClientRect();
-  viewX = startx - (rect.right-rect.width/2);
-  viewY = (rect.bottom-rect.height/2) - starty;
-}  
-function moveHandlerDown(e) {
-  moveDown = true;
-  var touchobj = e.changedTouches[0];
-  var startx = parseInt(touchobj.clientX);
-  var starty = parseInt(touchobj.clientY);
-  var rect = document.getElementById("moveCenter").getBoundingClientRect();
-  moveX = startx - (rect.right-rect.width/2);
-  moveY = (rect.bottom-rect.height/2) - starty;
+var positionLib = {
+  forwardSpeed: 0.0,
+  sideSpeed: 0.0,
+  pitch: 0.0,
+  pitchRate: 0.0,
+  yaw: 0.0,
+  yawRate: 0.0,
+  lastMouseX: null,
+  lastMouseY: null,
+  moveX: null,
+  moveY: null,
+  viewX: null,
+  viewY: null,
+  xPos: 0.0,
+  yPos: 0.0,
+  zPos: 0.0,
+  degToRad: function(degrees) {
+    return degrees * Math.PI / 180;
+  },
 }
-var newRotationMatrix = mat4.create();
-function handleTouchMove(e) {
-    if (!moveDown && !viewDown) {
-      return;
-  }
-  var touchobj = e.changedTouches[0];    
-  var startx = parseInt(touchobj.clientX);
-  var starty = parseInt(touchobj.clientY);
-  if (moveDown) {
-    var rect = document.getElementById("moveCenter").getBoundingClientRect();
-    moveX = startx - (rect.right-rect.width/2);
-    moveY = (rect.bottom-rect.height/2) - starty;
-    x = x + 0.0007*moveX;
-    z = z + 0.0007*moveY;
-  }
-  if (viewDown) {
+var handlers = {
+  mouseDown: false,
+  viewDown: false,
+  moveDown: false,
+  handleKeyDown: function(event) {
+    if (event.keyCode == 37) {
+      // Left Arrow Key (Move left)
+      positionLib.sideSpeed = 0.003;
+      //x = x + 0.1;
+    } else if (event.keyCode == 38) {
+      // Up Arrow Key (Move forward)
+      positionLib.forwardSpeed = 0.003;
+      //z = z + 0.2;
+    } else if (event.keyCode == 39) {
+      // Right Arrow Key (Move right)
+      positionLib.sideSpeed = -0.003;
+      //x = x - 0.1;
+    } else if (event.keyCode == 40) {
+      // Down Arrow Key (Move backward)
+      positionLib.forwardSpeed = -0.003;
+      //z = z - 0.2;
+    } else if (event.keyCode == 87) {
+      // W (View up)
+      positionLib.pitchRate = 0.1;
+    } else if (event.keyCode == 83) {
+      // S (View down)
+      positionLib.pitchRate = -0.1;
+    } else if (event.keyCode == 65) {
+      // A (View left)
+      positionLib.yawRate = 0.1;
+    } else if (event.keyCode == 68) {
+      // D (View right)
+      positionLib.yawRate = -0.1;
+    }
+  },
+  handleMouseDown: function(event) {
+    handlers.mouseDown = true;
+    positionLib.lastMouseX = event.clientX;
+    positionLib.lastMouseY = event.clientY;
+  },
+  viewHandlerDown: function(e) {
+    handlers.viewDown = true;
+    var touchobj = e.changedTouches[0];
+    var startx = parseInt(touchobj.clientX);
+    var starty = parseInt(touchobj.clientY);
     var rect = document.getElementById("viewCenter").getBoundingClientRect();
-    viewX = startx - (rect.right-rect.width/2);
-    viewY = (rect.bottom-rect.height/2) - starty;
-    if (viewX < 0) {
-      yawRate = 0.009;
-    } else {
-      yawRate = -0.009;
+    positionLib.viewX = startx - (rect.right-rect.width/2);
+    positionLib.viewY = (rect.bottom-rect.height/2) - starty;
+  },
+  moveHandlerDown: function(e) {
+    handlers.moveDown = true;
+    var touchobj = e.changedTouches[0];
+    var startx = parseInt(touchobj.clientX);
+    var starty = parseInt(touchobj.clientY);
+    var rect = document.getElementById("moveCenter").getBoundingClientRect();
+    positionLib.moveX = startx - (rect.right-rect.width/2);
+    positionLib.moveY = (rect.bottom-rect.height/2) - starty;
+  },
+  handleTouchMove: function(e) {
+      if (!handlers.moveDown && !handlers.viewDown) {
+        return;
     }
-    if (viewY > 0) {
-      pitchRate = 0.009;
-    } else {
-      pitchRate = -0.009;
+    var touchobj = e.changedTouches[0];    
+    var startx = parseInt(touchobj.clientX);
+    var starty = parseInt(touchobj.clientY);
+    if (handlers.moveDown) {
+      var rect = document.getElementById("moveCenter").getBoundingClientRect();
+      positionLib.moveX = startx - (rect.right-rect.width/2);
+      positionLib.moveY = (rect.bottom-rect.height/2) - starty;
+      positionLib.xPos = positionLib.xPos + 0.0007 * positionLib.moveX;
+      positionLib.zPos = positionLib.zPos + 0.0007 * positionLib.moveY;
     }
-  }
+    if (handlers.viewDown) {
+      var rect = document.getElementById("viewCenter").getBoundingClientRect();
+      positionLib.viewX = startx - (rect.right-rect.width/2);
+      positionLib.viewY = (rect.bottom-rect.height/2) - starty;
+      if (positionLib.viewX < 0) {
+        positionLib.yawRate = 0.009;
+      } else {
+        positionLib.yawRate = -0.009;
+      }
+      if (positionLib.viewY > 0) {
+        positionLib.pitchRate = 0.009;
+      } else {
+        positionLib.pitchRate = -0.009;
+      }
+    }
+  },
+  handleMouseMove: function(event) {
+    if (!handlers.mouseDown) {
+        return;
+    }
+    var newX = event.clientX;
+    var newY = event.clientY;
+    var deltaX = newX - positionLib.lastMouseX
+    var newRotationMatrix = mat4.create();
+    mat4.identity(newRotationMatrix);
+    mat4.rotate(newRotationMatrix, positionLib.degToRad(deltaX / 10), [0, 1, 0]);
+    var deltaY = newY - positionLib.lastMouseY;
+    mat4.rotate(newRotationMatrix, positionLib.degToRad(deltaY / 10), [1, 0, 0]);
+    mat4.multiply(newRotationMatrix, rotationMatrix, rotationMatrix);
+    positionLib.lastMouseX = newX;
+    positionLib.lastMouseY = newY;
+  },
+  handleUp: function(event) {
+    handlers.mouseDown = false;
+    handlers.moveDown = false;
+    handlers.viewDown = false;
+  },
+  handleReset: function(e) {
+    positionLib.viewX = 0;
+    positionLib.viewY = 0;
+    positionLib.moveX = 0;
+    positionLib.moveY = 0;
+    positionLib.yPos = 0;
+    positionLib.xPos = 0;
+    positionLib.zPos = 0;
+    positionLib.yaw = 0;
+    positionLib.pitch = 0;
+  },
 }
-function handleMouseMove(event) {
-  if (!mouseDown) {
-      return;
-  }
-  var newX = event.clientX;
-  var newY = event.clientY;
-  var deltaX = newX - lastMouseX
-  var newRotationMatrix = mat4.create();
-  mat4.identity(newRotationMatrix);
-  mat4.rotate(newRotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
-  var deltaY = newY - lastMouseY;
-  mat4.rotate(newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
-  mat4.multiply(newRotationMatrix, rotationMatrix, rotationMatrix);
-  lastMouseX = newX;
-  lastMouseY = newY;
-}
-function handleUp(event) {
-  mouseDown = false;
-  moveDown = false;
-  viewDown = false;
-}
-var x = 0.0;
-var y = 0.0;
-var z = -12.0;
-function drawScene() {
-  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
-  mat4.identity(modelViewMatrix);
-  mat4.rotate(modelViewMatrix, degToRad(pitch), [1, 0, 0]);
-  mat4.rotate(modelViewMatrix, degToRad(yaw), [0, 1, 0]);
-  mat4.translate(modelViewMatrix, [x, y, z]);
-  mat4.multiply(modelViewMatrix, rotationMatrix);
+var drawLib = {
+  lastTime: 0.0,
+  setMatrixUniforms: function() {
+    gl.uniformMatrix4fv(program.pMatrixUniform, false, projectionMatrix);
+    gl.uniformMatrix4fv(program.mvMatrixUniform, false, modelViewMatrix);
+  },
+  drawScene: function() {
+    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
+    mat4.identity(modelViewMatrix);
+    mat4.rotate(modelViewMatrix, positionLib.degToRad(-positionLib.pitch), [1, 0, 0]);
+    mat4.rotate(modelViewMatrix, positionLib.degToRad(-positionLib.yaw), [0, 1, 0]);
+    mat4.translate(modelViewMatrix, [-positionLib.xPos, positionLib.yPos, -positionLib.zPos]);
+    mat4.multiply(modelViewMatrix, rotationMatrix);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, hallwayVerticesBuffer);
-  gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-  gl.bindBuffer(gl.ARRAY_BUFFER, hallwayVerticesColorbuffer);
-  gl.vertexAttribPointer(program.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, hallwayVerticesIndexBuffer);
-  setMatrixUniforms();
-  gl.drawElements(gl.TRIANGLES, 18, gl.UNSIGNED_SHORT, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.hallwayVerticesBuffer);
+    gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.hallwayVerticesColorbuffer);
+    gl.vertexAttribPointer(program.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferLib.hallwayVerticesIndexBuffer);
+    drawLib.setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, 18, gl.UNSIGNED_SHORT, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesBuffer);
-  gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesColorBuffer);
-  gl.vertexAttribPointer(program.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVerticesIndexBuffer);
-  setMatrixUniforms();
-  gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
-}
-var lastTime = 0.0;
-function tick() {  
-  requestAnimFrame(tick);
-  drawScene();
-  var timeNow = new Date().getTime();
-  if (yawRate != 0) {
-    var elapsed = timeNow - lastTime;
-    yaw = yaw + elapsed * yawRate;
-    yawRate = 0;
-  }
-  if (pitchRate != 0) {
-    var elapsed = timeNow - lastTime;
-    pitch = pitch + elapsed * pitchRate;
-    pitchRate = 0;
-  }
-  lastTime = timeNow;
-}
-function handleReset(e) {
-  viewX = 0;
-  viewY = 0;
-  moveX = 0;
-  moveY = 0;
-  y = 0;
-  x = 0;
-  z = -7.0;
-  yaw = 0;
-  pitch = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.pyramidVertexPositionBuffer);
+    gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.pyramidVertexColorBuffer);
+    gl.vertexAttribPointer(program.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
+    drawLib.setMatrixUniforms();
+    gl.drawArrays(gl.TRIANGLES, 0, 12);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.cubeVerticesBuffer);
+    gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.cubeVerticesColorBuffer);
+    gl.vertexAttribPointer(program.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferLib.cubeVerticesIndexBuffer);
+    drawLib.setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+  },
+  tick: function() {  
+    requestAnimFrame(drawLib.tick);
+    drawLib.drawScene();
+    var timeNow = new Date().getTime();
+    var elapsed = timeNow - drawLib.lastTime;
+    if (positionLib.forwardSpeed != 0) {
+      positionLib.xPos -= Math.sin(positionLib.degToRad(positionLib.yaw)) * positionLib.forwardSpeed * elapsed;
+      positionLib.zPos -= Math.cos(positionLib.degToRad(positionLib.yaw)) * positionLib.forwardSpeed * elapsed;
+      positionLib.forwardSpeed = 0;
+    }
+    if (positionLib.sideSpeed != 0) {
+      positionLib.zPos += Math.sin(positionLib.degToRad(positionLib.yaw)) * positionLib.sideSpeed * elapsed;
+      positionLib.xPos -= Math.cos(positionLib.degToRad(positionLib.yaw)) * positionLib.sideSpeed * elapsed;
+      positionLib.sideSpeed = 0;
+    }
+    if (positionLib.yawRate != 0) {
+      positionLib.yaw = positionLib.yaw + elapsed * positionLib.yawRate;
+      positionLib.yawRate = 0;
+    }
+    if (positionLib.pitchRate != 0) {
+      positionLib.pitch = positionLib.pitch + elapsed * positionLib.pitchRate;
+      positionLib.pitchRate = 0;
+    }
+    drawLib.lastTime = timeNow;
+  },
 }
 function webGLStart() {
   var ua = navigator.userAgent.toLowerCase();
@@ -405,43 +483,43 @@ function webGLStart() {
     document.getElementById("moveStick").style.display = "none";
     document.getElementById("reset").style.display = "none";
   }
-  initGL();
-  initShaders();
-  initBuffers();
+  initLib.initGL();
+  initLib.initShaders();
+  bufferLib.initBuffers();
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
   document.getElementById("viewStick").addEventListener('touchstart', function(e) {
     e.preventDefault();
-    viewHandlerDown(e);
+    handlers.viewHandlerDown(e);
   }, false);
   document.getElementById("reset").addEventListener('touchstart', function(e) {
     e.preventDefault();
-    handleReset(e);
+    handlers.handleReset(e);
   }, false);
   document.getElementById("moveStick").addEventListener('touchstart', function(e) {
     e.preventDefault();
-    moveHandlerDown(e);
+    handlers.moveHandlerDown(e);
   }, false);
   document.getElementById("viewStick").addEventListener('touchleave', function(e) {
     e.preventDefault();
-    handleUp();
+    handlers.handleUp();
   }, false);
   document.getElementById("moveStick").addEventListener('touchleave', function(e) {
     e.preventDefault();
-    handleUp();
+    handlers.handleUp();
   }, false);
   document.addEventListener('touchmove', function(e){
     e.preventDefault();
-    handleTouchMove(e);
+    handlers.handleTouchMove(e);
    }, false);
-  document.getElementById("canvas1").onmousedown = handleMouseDown;
-  document.getElementById("reset").onmousedown = handleReset;
-  document.onmouseup = handleUp;
-  document.onmousemove = handleMouseMove;
-  document.onkeydown = handleKeyDown;
-  tick();
+  document.getElementById("canvas1").onmousedown = handlers.handleMouseDown;
+  document.getElementById("reset").onmousedown = handlers.handleReset;
+  document.onmouseup = handlers.handleUp;
+  document.onmousemove = handlers.handleMouseMove;
+  document.onkeydown = handlers.handleKeyDown;
+  drawLib.tick();
 }
 </script>
 </head>
