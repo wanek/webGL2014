@@ -28,16 +28,14 @@ var modelViewMatrix;
 var projectionMatrix;
 var rotationMatrix = mat4.create();
 mat4.identity(rotationMatrix);
+window.onresize = function(event) {
+  initLib.initGL();
+  drawLib.drawScene();
+}
 var initLib = {
   initGL: function() {
     var canvas = document.getElementById("canvas1");
-    var ua = navigator.userAgent.toLowerCase();
-    isAndroid = ua.indexOf("android") > -1;
-    if(isAndroid) {
-      canvas.height = window.innerHeight-200;
-    } else {
-      canvas.height = window.innerHeight;
-    }
+    canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
     try {
         gl = canvas.getContext("experimental-webgl");
@@ -285,6 +283,28 @@ var positionLib = {
   xPos: 0.0,
   yPos: 0.0,
   zPos: 0.0,
+  jump: function (x, y, z) {
+    positionLib.xPos = x;
+    positionLib.yPos = y;
+    positionLib.zPos = z;
+  },
+  jumpToPyramid: function() {
+    positionLib.jump(0, 0, 9);
+    positionLib.yaw = 180;
+    positionLib.pitch = 0;
+    mat4.identity(rotationMatrix);
+  },
+  jumpToCube: function() {
+    positionLib.jump(0, 0, -9);
+    positionLib.yaw = 0;
+    positionLib.pitch = 0;
+    mat4.identity(rotationMatrix);
+  },
+  jumpToCenter: function() {
+    positionLib.jump(0, 0, 0);
+    positionLib.pitch = 0;
+    mat4.identity(rotationMatrix);
+  },
   degToRad: function(degrees) {
     return degrees * Math.PI / 180;
   },
@@ -347,7 +367,7 @@ var handlers = {
     positionLib.forwardSpeed = positionLib.moveY * -0.00004;
   },
   handleTouchMove: function(e) {
-      if (!handlers.moveDown && !handlers.viewDown) {
+    if (!handlers.moveDown && !handlers.viewDown) {
         return;
     }
     var touchobj = e.changedTouches[0];    
@@ -467,13 +487,31 @@ var drawLib = {
   },
 }
 function webGLStart() {
-  var ua = navigator.userAgent.toLowerCase();
-  isAndroid = ua.indexOf("android") > -1;
-  if(!isAndroid) {
-    document.getElementById("viewStick").style.display = "none";
-    document.getElementById("moveStick").style.display = "none";
-    document.getElementById("reset").style.display = "none";
-  }
+  // var ua = navigator.userAgent.toLowerCase();
+  // isAndroid = ua.indexOf("android") > -1;
+  // if(isAndroid) {
+  //   document.getElementById("viewStick").addEventListener('touchstart', function(e) {
+  //   e.preventDefault();
+  //   handlers.viewHandlerDown(e);
+  //   }, false);
+  //   document.getElementById("reset").addEventListener('touchstart', function(e) {
+  //     e.preventDefault();
+  //     handlers.handleReset(e);
+  //   }, false);
+  //   document.getElementById("moveStick").addEventListener('touchstart', function(e) {
+  //     e.preventDefault();
+  //     handlers.moveHandlerDown(e);
+  //   }, false);
+  //   document.addEventListener('touchend', function(e) {
+  //     e.preventDefault();
+  //     handlers.handleUp();
+  //   }, false);
+  //   document.addEventListener('touchmove', function(e){
+  //     e.preventDefault();
+  //     handlers.handleTouchMove(e);
+  //    }, false);
+  //   document.getElementById("reset").onmousedown = handlers.handleReset;
+  // }
   initLib.initGL();
   initLib.initShaders();
   bufferLib.initBuffers();
@@ -481,28 +519,7 @@ function webGLStart() {
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
-  document.getElementById("viewStick").addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    handlers.viewHandlerDown(e);
-  }, false);
-  document.getElementById("reset").addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    handlers.handleReset(e);
-  }, false);
-  document.getElementById("moveStick").addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    handlers.moveHandlerDown(e);
-  }, false);
-  document.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    handlers.handleUp();
-  }, false);
-  document.addEventListener('touchmove', function(e){
-    e.preventDefault();
-    handlers.handleTouchMove(e);
-   }, false);
   document.getElementById("canvas1").onmousedown = handlers.handleMouseDown;
-  document.getElementById("reset").onmousedown = handlers.handleReset;
   document.onmouseup = handlers.handleUp;
   document.onmousemove = handlers.handleMouseMove;
   document.onkeydown = handlers.handleKeyDown;
@@ -513,19 +530,6 @@ function webGLStart() {
 <body onload="webGLStart();" bgcolor="#000000" style="width: 100%; height: 100%; padding: 0px; border: 0px; margin: 0px; overflow: hidden;">
   <center>
     <canvas id="canvas1" style="padding=0.0em" width="500" height="500"></canvas>
-    </br>
-    <svg id="viewStick" width="200"height="200" style="padding-left:50px;padding-right:50px;">
-      <circle cx="100" cy="100" r="100"  stroke="black" stroke-width="3" fill="#610B0B"/>
-      <circle id="viewCenter" cx="100" cy="100" r="95"  stroke="black" stroke-width="2" fill="#B40404"/>
-    </svg>
-    <svg id="moveStick" width="200" height="200" style="padding-left:50px;padding-right:50px;">
-      <circle cx="100" cy="100" r="100" style="padding-left:50px;" stroke="black" stroke-width="3" fill="#610B0B"/>
-      <circle id="moveCenter" cx="100" cy="100" r="95"  stroke="black" stroke-width="2" fill="#B40404"/>
-    </svg>
-  <svg id="reset" width="100" height="100" style="padding-left:50px;padding-right:50px;">
-    <circle cx="50" cy="50" r="50" style="padding-left:50px;" stroke="black" stroke-width="3" fill="#610B0B"/>
-  </svg>
   </center>
-  {% include "question.html" %}
-</body>
+  </body>
 </html>
