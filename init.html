@@ -26,6 +26,8 @@ var gl;
 var program;
 var modelViewMatrix;
 var projectionMatrix;
+var width;
+var height;
 var rotationMatrix = mat4.create();
 mat4.identity(rotationMatrix);
 window.onresize = function(event) {
@@ -35,8 +37,10 @@ window.onresize = function(event) {
 var initLib = {
   initGL: function() {
     var canvas = document.getElementById("canvas1");
-    canvas.height = window.innerHeight;
+    height = window.innerHeight;
+    width = window.innerWidth;
     canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight
     try {
         gl = canvas.getContext("experimental-webgl");
         gl.viewportWidth = canvas.width;
@@ -328,10 +332,15 @@ var positionLib = {
     return degrees * Math.PI / 180;
   },
 }
+var initTouch = {
+  xPos: 0,
+  yPos: 0,
+}
 var handlers = {
   mouseDown: false,
   viewDown: false,
   moveDown: false,
+  touches: [0, 0],
   handleKeyDown: function(event) {
     if (event.keyCode == 37) {
       // Left Arrow Key (Move left)
@@ -347,16 +356,16 @@ var handlers = {
       positionLib.forwardSpeed = -0.003;
     } else if (event.keyCode == 87) {
       // W (View up)
-      positionLib.pitchRate = 0.1;
+      positionLib.pitchRate = 0.02;
     } else if (event.keyCode == 83) {
       // S (View down)
-      positionLib.pitchRate = -0.1;
+      positionLib.pitchRate = -0.02;
     } else if (event.keyCode == 65) {
       // A (View left)
-      positionLib.yawRate = 0.1;
+      positionLib.yawRate = 0.02;
     } else if (event.keyCode == 68) {
       // D (View right)
-      positionLib.yawRate = -0.1;
+      positionLib.yawRate = -0.02;
     }
   },
   handleMouseDown: function(event) {
@@ -366,24 +375,23 @@ var handlers = {
   },
   viewHandlerDown: function(e) {
     handlers.viewDown = true;
+    var newTouch = initTouch;
     var touchobj = e.changedTouches[0];
     var startx = parseInt(touchobj.clientX);
     var starty = parseInt(touchobj.clientY);
-    var rect = document.getElementById("viewCenter").getBoundingClientRect();
-    positionLib.viewX = startx - (rect.right-rect.width/2);
-    positionLib.viewY = (rect.bottom-rect.height/2) - starty;
-    positionLib(handleTouchMove(e));
+    newTouch.xPos = startx;
+    newTouch.yPos = starty;
+    handlers.touches[0] = newTouch;
   },
   moveHandlerDown: function(e) {
     handlers.moveDown = true;
+    var newTouch = initTouch;
     var touchobj = e.changedTouches[0];
     var startx = parseInt(touchobj.clientX);
     var starty = parseInt(touchobj.clientY);
-    var rect = document.getElementById("moveCenter").getBoundingClientRect();
-    positionLib.moveX = startx - (rect.right-rect.width/2);
-    positionLib.moveY = (rect.bottom-rect.height/2) - starty;
-    positionLib.sideSpeed = positionLib.moveX * -0.00001;
-    positionLib.forwardSpeed = positionLib.moveY * -0.00004;
+    newTouch.xPos = startx;
+    newTouch.yPos = starty;
+    handlers.touches[1] = newTouch;
   },
   handleTouchMove: function(e) {
     if (!handlers.moveDown && !handlers.viewDown) {
@@ -393,18 +401,12 @@ var handlers = {
     var startx = parseInt(touchobj.clientX);
     var starty = parseInt(touchobj.clientY);
     if (handlers.moveDown) {
-      var rect = document.getElementById("moveCenter").getBoundingClientRect();
-      positionLib.moveX = startx - (rect.right-rect.width/2);
-      positionLib.moveY = (rect.bottom-rect.height/2) - starty;
-      positionLib.sideSpeed = positionLib.moveX * -0.00001;
-      positionLib.forwardSpeed = positionLib.moveY * 0.00004;
+      handlers.touches[1].xPos = startx;
+      handlers.touches[1].yPos = starty;
     }
     if (handlers.viewDown) {
-      var rect = document.getElementById("viewCenter").getBoundingClientRect();
-      positionLib.viewX = startx - (rect.right-rect.width/2);
-      positionLib.viewY = (rect.bottom-rect.height/2) - starty;
-      positionLib.yawRate = -0.0003 * positionLib.viewX;
-      positionLib.pitchRate = 0.0003 * positionLib.viewY;
+      handlers.touches[0].xPos = startx;
+      handlers.touches[0].yPos = starty;
     }
   },
   handleMouseMove: function(event) {
@@ -427,6 +429,7 @@ var handlers = {
     handlers.mouseDown = false;
     handlers.moveDown = false;
     handlers.viewDown = false;
+    handlers.touches = [0, 0];
   },
   handleReset: function(e) {
     positionLib.viewX = 0;
@@ -479,11 +482,30 @@ var drawLib = {
     drawLib.setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
   },
+  done: false,
   tick: function() {  
     requestAnimFrame(drawLib.tick);
     drawLib.drawScene();
     var timeNow = new Date().getTime();
     var elapsed = timeNow - drawLib.lastTime;
+    if (handlers.moveDown) {
+      var startx = handlers.touches[1].xPos;
+      var starty = handlers.touches[1].yPos;
+      var rect = document.getElementById("moveCenter").getBoundingClientRect();
+      positionLib.moveX = startx - (rect.right-rect.width/2);
+      positionLib.moveY = (rect.bottom-rect.height/2) - starty;
+      positionLib.sideSpeed = positionLib.moveX * -0.00001;
+      positionLib.forwardSpeed = positionLib.moveY * 0.00004;
+    }
+    if (handlers.viewDown) {
+      var startx = handlers.touches[0].xPos;
+      var starty = handlers.touches[0].yPos;
+      var rect = document.getElementById("viewCenter").getBoundingClientRect();
+      positionLib.viewX = startx - (rect.right-rect.width/2);
+      positionLib.viewY = (rect.bottom-rect.height/2) - starty;
+      positionLib.yawRate = -0.0003 * positionLib.viewX;
+      positionLib.pitchRate = 0.0003 * positionLib.viewY;
+    }
     if (positionLib.forwardSpeed != 0) {
       positionLib.xPos -= Math.sin(positionLib.degToRad(positionLib.yaw)) * positionLib.forwardSpeed * elapsed;
       positionLib.zPos -= Math.cos(positionLib.degToRad(positionLib.yaw)) * positionLib.forwardSpeed * elapsed;
