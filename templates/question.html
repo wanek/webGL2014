@@ -1,0 +1,63 @@
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<link rel="stylesheet" href="{{STATIC_URL}}vader/jquery-ui-1.10.3.custom.min.css">
+  
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}CSS/question.css">
+<script type="text/javascript" src="{{STATIC_URL}}JS/quest.js"> </script> 
+<div id="controls">
+  <svg id="viewStick">     
+    <g transform="translate(5,5)">
+      <circle cx="100" cy="100" r="100"  stroke="black" stroke-width="3" fill="#610B0B"/>
+      <circle id="viewCenter" cx="100" cy="100" r="90"  stroke="black" stroke-width="2" fill="#B40404"/>
+    </g>
+  </svg>
+  <svg id="moveStick">
+    <g transform="translate(110,5)">
+      <circle cx="100" cy="100" r="100" style="padding-left:50px;" stroke="black" stroke-width="3" fill="#610B0B"/>
+      <circle id="moveCenter" cx="100" cy="100" r="90"  stroke="black" stroke-width="2" fill="#B40404"/>
+    </g>
+  </svg>
+  <svg id="reset">
+    <g transform="translate(1,1)">
+      <circle cx="50" cy="50" r="50" style="padding-left:50px;" stroke="black" stroke-width="3" fill="#610B0B"/>
+    </g>
+  </svg>
+</div>
+<svg id="help_button">
+  <g id="help_g" transform = "translate( -190,-190)">
+    <ellipse stroke="#000000" ry="54.5" rx="55.5" id="svg_18" cy="250.5" cx="251.5" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="5" fill="#BFA299"/>
+    <ellipse rx="1" id="svg_5" cy="166" cx="150" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="5" stroke="white" fill="white"/>
+    <path stroke="black" id="svg_12" d="m251.1821,191.83701c-31.47749,0 -56.9951,25.74124 -56.9951,57.50624c0,31.75377 25.51761,57.49376 56.9951,57.49376c31.48853,0 57.00491,-25.73999 57.00491,-57.49376c0,-31.765 -25.51639,-57.50624 -57.00491,-57.50624zm5.21704,90.6225l-10.62651,0l0,-10.27374l10.62651,0l0,10.27374zm0,-21.23505l0,3.39133l-10.62651,0l0,-4.17627c0,-12.62877 14.24141,-14.63501 14.24141,-23.59251c0,-4.0925 -3.62595,-7.23126 -8.36612,-7.23126c-4.91916,0 -9.24014,3.65875 -9.24014,3.65875l-6.04323,-7.56998c0,0 5.95987,-6.27876 16.22847,-6.27876c9.75494,0 18.81366,6.09627 18.81366,16.3725c0,14.36501 -15.00754,16.02 -15.00754,25.42621z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" fill="black"/>
+    <ellipse stroke="#7f6c86" ry="50" rx="48" id="svg_22" cy="250" cx="251" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="5" fill="none"/>
+  </g>
+</svg>
+<svg id = "jump_button" width="640" height="480" xmlns="http://www.w3.org/2000/svg">
+  <g id="jump_g" transform="translate(-100,-60) scale(.75)">
+    <title></title>
+    <ellipse stroke="#000000" fill="#7f6c86" stroke-width="4" stroke-dasharray="null" stroke-linejoin="null" stroke-linecap="null" cx="236" cy="162.5" id="svg_19" rx="74" ry="74"/>
+    <ellipse stroke="#000000" fill="#000000" stroke-width="0" stroke-dasharray="null" stroke-linejoin="null" stroke-linecap="null" cx="237" cy="162.5" id="svg_17" rx="65" ry="65"/>
+    <text fill="#bfa299" stroke-width="0" stroke-dasharray="null" stroke-linejoin="null" stroke-linecap="null" x="219.52336" y="170.65538" id="svg_1" font-size="22" font-family="Fantasy" text-anchor="middle" xml:space="preserve" transform="matrix(1.91075 0 0 1.50637 -182.454 -83.0523)" stroke="#000000">JUMP</text>
+  </g>
+</svg>
+<div id="help-model" title="Choose Your Model" style="height: 250px; width: 100px; position: relative">
+  <p>Jump:</p>
+  <div style="position: absolute; left: 85px">
+  <svg id="square" width="75"height="75" style="padding: 5px">
+    <rect width="50" height="50" style="fill:#5F04B4; stroke-width:3px" />
+  </svg>
+  <svg id="triangle" width="75"height="75" style="padding: 5px">
+    <polygon points="25,0 0,50 50,50" style="fill:rgb(0,0,255); stroke-width:3px" />
+  </svg>
+  </div>
+</div>
+<div id="help-navigate" title="Help">
+  <div id="help-android">
+    <p style="text-size: 12px">To change your view, use the left joystick.</p>
+    <p style="text-size: 12px">To move through the model, use the right joystick.</p>
+    <p style="text-size: 12px">If you get lost, click the reset button on the right!</p>
+  </div>
+  <div id="help-desktop">
+    <p style="text-size: 12px">To move through the model, use the arrow keys on your keyboard.</p>
+    <p style="text-size: 14px">To change your first person view, use the WASD keys.</p>
+  </div>
+</div>
