@@ -34,13 +34,13 @@ window.onresize = function(event) {
   initLib.initGL();
   drawLib.drawScene();
 }
-var initLib = {
+var initLib = {  
   initGL: function() {
     var canvas = document.getElementById("canvas1");
     height = window.innerHeight;
     width = window.innerWidth;
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight
+    canvas.height = window.innerHeight;
     try {
         gl = canvas.getContext("experimental-webgl");
         gl.viewportWidth = canvas.width;
@@ -99,11 +99,13 @@ var initLib = {
   },
 }
 var bufferLib = {
+  proportionWidth: 24,
+  proportionHeight: 24,
   floorBuffer: [
-      -1.0, -0.1, -12.0,
-       1.0, -0.1, -12.0,
-       1.0, -0.1,  12.0,
-      -1.0, -0.1,  12.0,
+      -1.0, -0.1, -6.0,
+       1.0, -0.1, -6.0,
+       1.0, -0.1,  6.0,
+      -1.0, -0.1,  6.0,
     ],
   cubeVerticesBuffer: 0,
   cubeVerticesColorBuffer: 0,
@@ -125,21 +127,21 @@ var bufferLib = {
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.pyramidVertexPositionBuffer);
     var vertices = [
         // Front face
-         0.0,  0.5,  11.5,
-        -0.5, -0.1,  12,
-         0.5, -0.1,  12,
+         0.0,  0.5,  5.5,
+        -0.5, -0.1,  6,
+         0.5, -0.1,  6,
         // Right face
-         0.0,  0.5,  11.5,
-         0.5, -0.1,  12,
-         0.5, -0.1,  11,
+         0.0,  0.5,  5.5,
+         0.5, -0.1,  6,
+         0.5, -0.1,  5,
         // Back face
-         0.0,  0.5,  11.5,
-         0.5, -0.1,  11,
-        -0.5, -0.1,  11,
+         0.0,  0.5,  5.5,
+         0.5, -0.1,  5,
+        -0.5, -0.1,  5,
         // Left face
-         0.0,  0.5,  11.5,
-        -0.5, -0.1,  11,
-        -0.5, -0.1,  12
+         0.0,  0.5,  5.5,
+        -0.5, -0.1,  5,
+        -0.5, -0.1,  6
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     bufferLib.pyramidVertexColorBuffer = gl.createBuffer();
@@ -169,30 +171,30 @@ var bufferLib = {
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.hallwayVerticesBuffer);
     var vertices = [
       // Back face
-      -1, -0.1, -12.0,
-      -1,  1, -12.0,
-       1,  1, -12.0,
-       1, -0.1, -12.0,
+      -1, -0.1, -6.0,
+      -1,  1, -6.0,
+       1,  1, -6.0,
+       1, -0.1, -6.0,
        // Front face
-      -1, -0.1, 12.0,
-      -1,  1, 12.0,
-       1,  1, 12.0,
-       1, -0.1, 12.0,
+      -1, -0.1, 6.0,
+      -1,  1, 6.0,
+       1,  1, 6.0,
+       1, -0.1, 6.0,
       // Bottom face
-      -1.0, -0.1, -12.0,
-       1.0, -0.1, -12.0,
-       1.0, -0.1,  12.0,
-      -1.0, -0.1,  12.0,
+      -1.0, -0.1, -6.0,
+       1.0, -0.1, -6.0,
+       1.0, -0.1,  6.0,
+      -1.0, -0.1,  6.0,
       // Right face
-       1.0, -0.1, -12.0,
-       1.0,  1.0, -12.0,
-       1.0,  1.0,  12.0,
-       1.0, -0.1,  12.0,
+       1.0, -0.1, -6.0,
+       1.0,  1.0, -6.0,
+       1.0,  1.0,  6.0,
+       1.0, -0.1,  6.0,
       // Left face
-      -1.0, -0.1, -12.0,
-      -1.0, -0.1,  12.0,
-      -1.0,  1.0,  12.0,
-      -1.0,  1.0, -12.0
+      -1.0, -0.1, -6.0,
+      -1.0, -0.1,  6.0,
+      -1.0,  1.0,  6.0,
+      -1.0,  1.0, -6.0
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     var colors = [
@@ -228,35 +230,35 @@ var bufferLib = {
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferLib.cubeVerticesBuffer);
     var vertices = [
       // Front face
-      -0.25, -0.1,  -11.5,
-      -0.25,  0.4,  -11.5,
-       0.25,  0.4,  -11.5,
-       0.25,  -0.1,  -11.5,
+      -0.25, -0.1,  -5.5,
+      -0.25,  0.4,  -5.5,
+       0.25,  0.4,  -5.5,
+       0.25,  -0.1,  -5.5,
       // Back face
-      -0.25, -0.1, -12.0,
-      -0.25,  0.4, -12.0,
-       0.25,  0.4, -12.0,
-       0.25, -0.1, -12.0,
+      -0.25, -0.1, -6.0,
+      -0.25,  0.4, -6.0,
+       0.25,  0.4, -6.0,
+       0.25, -0.1, -6.0,
       // Top face
-      -0.25,  0.4, -12.0,
-      -0.25,  0.4,  -11.5,
-       0.25,  0.4,  -11.5,
-       0.25,  0.4, -12.0,
+      -0.25,  0.4, -6.0,
+      -0.25,  0.4,  -5.5,
+       0.25,  0.4,  -5.5,
+       0.25,  0.4, -6.0,
       // Bottom face
-      -0.25, -0.1, -12.0,
-       0.25, -0.1, -12.0,
-       0.25, -0.1,  -11.5,
-      -0.25, -0.1,  -11.5,
+      -0.25, -0.1, -6.0,
+       0.25, -0.1, -6.0,
+       0.25, -0.1,  -5.5,
+      -0.25, -0.1,  -5.5,
       // Right face
-       0.25, -0.1, -12.0,
-       0.25,  0.4, -12.0,
-       0.25,  0.4,  -11.5,
-       0.25, -0.1,  -11.5,
+       0.25, -0.1, -6.0,
+       0.25,  0.4, -6.0,
+       0.25,  0.4,  -5.5,
+       0.25, -0.1,  -5.5,
       // Left face
-      -0.25, -0.1, -12.0,
-      -0.25, -0.1,  -11.5,
-      -0.25,  0.4,  -11.5,
-      -0.25,  0.4, -12.0
+      -0.25, -0.1, -6.0,
+      -0.25, -0.1,  -5.5,
+      -0.25,  0.4,  -5.5,
+      -0.25,  0.4, -6.0
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     var colors = [
@@ -337,6 +339,7 @@ var initTouch = {
   yPos: 0,
 }
 var handlers = {
+  cameraCircleDown: false,
   mouseDown: false,
   viewDown: false,
   moveDown: false,
@@ -368,10 +371,13 @@ var handlers = {
       positionLib.yawRate = -0.02;
     }
   },
-  handleMouseDown: function(event) {
+  downCircle: function(e) {
+    handlers.cameraCircleDown = true;
+  },
+  handleMouseDown: function(e) {
     handlers.mouseDown = true;
-    positionLib.lastMouseX = event.clientX;
-    positionLib.lastMouseY = event.clientY;
+    positionLib.lastMouseX = e.clientX;
+    positionLib.lastMouseY = e.clientY;
   },
   viewHandlerDown: function(e) {
     handlers.viewDown = true;
@@ -409,23 +415,30 @@ var handlers = {
       handlers.touches[0].yPos = starty;
     }
   },
-  handleMouseMove: function(event) {
-    if (!handlers.mouseDown) {
-        return;
+  handleMouseMove: function(e) {
+    if (handlers.mouseDown) {
+      var newX = event.clientX;
+      var newY = event.clientY;
+      var deltaX = newX - positionLib.lastMouseX
+      var newRotationMatrix = mat4.create();
+      mat4.identity(newRotationMatrix);
+      mat4.rotate(newRotationMatrix, positionLib.degToRad(deltaX / 10), [0, 1, 0]);
+      var deltaY = newY - positionLib.lastMouseY;
+      mat4.rotate(newRotationMatrix, positionLib.degToRad(deltaY / 10), [1, 0, 0]);
+      mat4.multiply(newRotationMatrix, rotationMatrix, rotationMatrix);
+      positionLib.lastMouseX = newX;
+      positionLib.lastMouseY = newY;
     }
-    var newX = event.clientX;
-    var newY = event.clientY;
-    var deltaX = newX - positionLib.lastMouseX
-    var newRotationMatrix = mat4.create();
-    mat4.identity(newRotationMatrix);
-    mat4.rotate(newRotationMatrix, positionLib.degToRad(deltaX / 10), [0, 1, 0]);
-    var deltaY = newY - positionLib.lastMouseY;
-    mat4.rotate(newRotationMatrix, positionLib.degToRad(deltaY / 10), [1, 0, 0]);
-    mat4.multiply(newRotationMatrix, rotationMatrix, rotationMatrix);
-    positionLib.lastMouseX = newX;
-    positionLib.lastMouseY = newY;
+    if (handlers.cameraCircleDown) {
+      var rect = document.getElementById("cameraRect").getBoundingClientRect();
+      var newX = e.clientX - (rect.right-rect.width/2);
+      var newZ = (rect.bottom-rect.height/2) - e.clientY;
+      positionLib.xPos = newX/bufferLib.proportionWidth;
+      positionLib.zPos = -newZ/bufferLib.proportionHeight;
+    }    
   },
-  handleUp: function(event) {
+  handleUp: function(e) {
+    handlers.cameraCircleDown = false;
     handlers.mouseDown = false;
     handlers.moveDown = false;
     handlers.viewDown = false;
@@ -445,6 +458,18 @@ var handlers = {
 }
 var drawLib = {
   lastTime: 0.0,
+  testBoundaries: function() {
+    if (positionLib.zPos < bufferLib.floorBuffer[2] + 0.25) {
+      positionLib.zPos = (bufferLib.floorBuffer[2] + 0.25);
+    } else if (positionLib.zPos > bufferLib.floorBuffer[8] - 0.25) {
+      positionLib.zPos = (bufferLib.floorBuffer[8] - 0.25);
+    }
+    if (positionLib.xPos < bufferLib.floorBuffer[0] + 0.25) {
+      positionLib.xPos = (bufferLib.floorBuffer[0] + 0.25);
+    } else if (positionLib.xPos > bufferLib.floorBuffer[3] - 0.25) {
+      positionLib.xPos = (bufferLib.floorBuffer[3] - 0.25);
+    }
+  },
   setMatrixUniforms: function() {
     gl.uniformMatrix4fv(program.pMatrixUniform, false, projectionMatrix);
     gl.uniformMatrix4fv(program.mvMatrixUniform, false, modelViewMatrix);
@@ -483,8 +508,14 @@ var drawLib = {
     gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
   },
   done: false,
-  tick: function() {  
+  tick: function() {
     requestAnimFrame(drawLib.tick);
+    drawLib.testBoundaries();
+    var rect = document.getElementById("cameraRect").getBoundingClientRect();
+    var newCircleX = (positionLib.xPos * bufferLib.proportionWidth)+((rect.right - rect.left)/2);
+    var newCircleY = (positionLib.zPos * bufferLib.proportionHeight)+((rect.bottom - rect.top)/2);
+    $("#cameraCircle").attr("cx", newCircleX);
+    $("#cameraCircle").attr("cy", newCircleY);
     drawLib.drawScene();
     var timeNow = new Date().getTime();
     var elapsed = timeNow - drawLib.lastTime;
@@ -509,31 +540,11 @@ var drawLib = {
     if (positionLib.forwardSpeed != 0) {
       positionLib.xPos -= Math.sin(positionLib.degToRad(positionLib.yaw)) * positionLib.forwardSpeed * elapsed;
       positionLib.zPos -= Math.cos(positionLib.degToRad(positionLib.yaw)) * positionLib.forwardSpeed * elapsed;
-      if (positionLib.zPos < bufferLib.floorBuffer[2] + 0.25) {
-        positionLib.zPos = (bufferLib.floorBuffer[2] + 0.25);
-      } else if (positionLib.zPos > bufferLib.floorBuffer[8] - 0.25) {
-        positionLib.zPos = (bufferLib.floorBuffer[8] - 0.25);
-      }
-      if (positionLib.xPos < bufferLib.floorBuffer[0] + 0.25) {
-        positionLib.xPos = (bufferLib.floorBuffer[0] + 0.25);
-      } else if (positionLib.xPos > bufferLib.floorBuffer[3] - 0.25) {
-        positionLib.xPos = (bufferLib.floorBuffer[3] - 0.25);
-      }
       positionLib.forwardSpeed = 0;
     }
     if (positionLib.sideSpeed != 0) {
       positionLib.zPos += Math.sin(positionLib.degToRad(positionLib.yaw)) * positionLib.sideSpeed * elapsed;
-      positionLib.xPos -= Math.cos(positionLib.degToRad(positionLib.yaw)) * positionLib.sideSpeed * elapsed;
-      if (positionLib.zPos < bufferLib.floorBuffer[2] + 0.25) {
-        positionLib.zPos = (bufferLib.floorBuffer[2] + 0.25);
-      } else if (positionLib.zPos > bufferLib.floorBuffer[8] - 0.25) {
-        positionLib.zPos = (bufferLib.floorBuffer[8] - 0.25);
-      }
-      if (positionLib.xPos < bufferLib.floorBuffer[0] + 0.25) {
-        positionLib.xPos = (bufferLib.floorBuffer[0] + 0.25);
-      } else if (positionLib.xPos > bufferLib.floorBuffer[3] - 0.25) {
-        positionLib.xPos = (bufferLib.floorBuffer[3] - 0.25);
-      }      
+      positionLib.xPos -= Math.cos(positionLib.degToRad(positionLib.yaw)) * positionLib.sideSpeed * elapsed;  
       positionLib.sideSpeed = 0;
     }
     if (positionLib.yawRate != 0) {
@@ -584,6 +595,7 @@ function webGLStart() {
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
   document.getElementById("canvas1").onmousedown = handlers.handleMouseDown;
+  document.getElementById("cameraCircle").onmousedown = handlers.downCircle;
   document.onmouseup = handlers.handleUp;
   document.onmousemove = handlers.handleMouseMove;
   document.onkeydown = handlers.handleKeyDown;
@@ -593,6 +605,10 @@ function webGLStart() {
 </head>
 <body onload="webGLStart();" bgcolor="#000000" style="width: 100%; height: 100%; padding: 0px; border: 0px; margin: 0px; overflow: hidden;">
   <canvas id="canvas1" style="padding=0.0em" width="500" height="500"></canvas>
+  <svg id="cameraSVG" width="200" height="288">
+  <rect id="cameraRect" width="48" height="288" stroke="black" stroke-width="1" fill="white" />
+  <circle id="cameraCircle"cx="24" cy="84" r="1" stroke="red" stroke-width="3" fill="red" />
+</svg>
   {% include "question.html" %}
 </body>
 </html>
