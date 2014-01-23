@@ -1,20 +1,27 @@
 #help_button {
   position:absolute;
-  left:100%;
   top:50px;
   background-color:none;
   overflow:visible;
-  height:200px;
-  width:130px;
+  height:118px;
+  width:118px;
+}
+#help_g {
+  cursor: help;
 }
 #jump_button {
   position:absolute;
-  left:.2%;
   top:50px;
   background-color:none;
   overflow:visible;
-  height:200px;
-  width:200px;
+  height:118px;
+  width:118px;
+}
+#jump_g {
+  cursor: pointer;
+}
+#jump-dialog svg {
+  padding: 5px;
 }
 #controls {
   padding-left:130px;
