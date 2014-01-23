@@ -1,24 +1,23 @@
 function DisplayHelpDiv(){
-  $("#jump_button").css("left", (width/100*.2));
-  var transform = $("#help_g").attr("transform");
   if (!isAndroid){
-    $("#help_button")
-    .css("height","20%")
-    .css("width","10%")
-    .css("left", "88%");
-    var newtransform = "translate(-80,-80) scale(.45)";
-    $("#help_g").attr("transform",newtransform);
-    $("#jump_button").css("left","2%");
-    $("#jump_button").css("top","40px");
-    $("#jump_g").attr("transform","translate(-40,-20) scale(.35)");
+    $("#help_g").attr("transform","translate(-85,-85) scale(.45)");
+    $("#help_button").css("width", "55px").css("height", "55px");
+    $("#jump_button").css("width", "55px").css("height", "55px");
+    $("#help_button").css("left", (width*.95)-55);
+    $("#jump_button").css("left", (width*.05));
+    $("#jump_g").attr("transform","translate(-55,-30) scale(.35)");
     $("#help-android").css("display", "none");
   } else {
       $("#help-desktop").css("display", "none");
-      $("#help-navigate").css("width",width*.5);
-      $("#help-model").css("width",width*.5);
+      $("#help_g").attr("transform","translate( -192,-191)");
+      $("#jump_g").attr("transform", "translate(-123,-66) scale(.77)");
+      $("#help_button").css("width", "118px").css("height", "118px");
+      $("#jump_button").css("width", "118px").css("height", "118px");
+      $("#help_button").css("left", (width*.95)-118);
+      $("#jump_button").css("left", (width*.05));
   }
   var modelChosen = 0;
-  $("#help-model").dialog({
+  $("#jump-dialog").dialog({
     modal: true,
     height: 280,
     autoOpen: false,
@@ -43,7 +42,7 @@ function DisplayHelpDiv(){
       }
     }
   });
-  $( "#help-navigate" ).dialog({
+  $( "#help-dialog" ).dialog({
     modal: true,
     autoOpen: false,
     draggable: false,
@@ -51,25 +50,25 @@ function DisplayHelpDiv(){
     width:function() {
       if (isAndroid) {
   	  //there is probably a cleaner way to make these adjustments
-  	  //but currently most dynamic resizing for #help-navigate is occuring here
+  	  //but currently most dynamic resizing for #help-dialog is occuring here
     	  if (window.height < window.width){//landscape view
-  	      $(this).css("width",width*.5)
+  	      $(this).css("width",width*.5);
   	      $("#help-android > p").css("font-size","20px");
     	  }
     	  if (window.height > window.width){ //Portrait view
-  	      $(this).css("width",width*.7)
+  	      $(this).css("width",width*.7);
   	      $("#help-android > p").css("font-size","26px");
-  	      $(".ui-dialog-titlebar-close").css("height", height*.06).css("width",height*.06)
+  	      $(".ui-dialog-titlebar-close").css("height", height*.06).css("width",height*.06);
     	  }  
       }
     }
   });
   if (isAndroid) {
     $("#jump_button").on("touchstart", function() {
-      $("#help-model").dialog("open");
+      $("#jump-dialog").dialog("open");
     });
     $("#help_button").on("touchstart", function() {
-      $("#help-navigate").dialog("open");
+      $("#help-dialog").dialog("open");
     });
     $("#square").css({"stroke": "#E6E6E6"});
     $("#square").on("touchstart", function() {
@@ -92,21 +91,21 @@ function DisplayHelpDiv(){
         } else {
           positionLib.jumpToPyramid();
         }
-      $("#help-model").dialog("close");
+      $("#jump-dialog").dialog("close");
     });
     $("button span:contains('Cancel')").on("touchstart", function() {
-      $("#help-model").dialog("close");
+      $("#jump-dialog").dialog("close");
     });
     $(".ui-dialog-titlebar-close").on("touchstart", function() {
-      $("#help-navigate").dialog("close");
-      $("#help-model").dialog("close");
+      $("#help-dialog").dialog("close");
+      $("#jump-dialog").dialog("close");
     });
   } else {
       $("#jump_button").click(function(){
-        $("#help-model").dialog("open");
+        $("#jump-dialog").dialog("open");
       });
       $("#help_button").click(function(){
-        $("#help-navigate").dialog("open");
+        $("#help-dialog").dialog("open");
       });
       $("#square").css({"stroke": "#E6E6E6"});
       $("#square").click(function() {
@@ -132,8 +131,6 @@ function redrawSVG(){
   	$("#move_g").attr("transform","translate(270,5) scale(.75)");
   	$("#view_g").attr("transform","translate(5,5) scale(.75)");
   	$("#reset_g").attr("transform","translate(1,1) scale(.5)");
-  	$("#help_button").css("left", (width/100*88));
-  	$("#jump_button").css("left", (width/100*.2));
   } else {
     $("#controls").css("top","93%").css("padding-left","130px").css("width",width);
     $("#moveStick").css("margin-left","0px");
