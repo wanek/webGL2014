@@ -6,7 +6,5 @@ urlpatterns = patterns('',
                        url(r'^Home$', 'homepage'),
                        url(r'^Home/$','homepage'),
                        url(r'^test/$',views.testpage, name="test"),
-                      
-    
-
+                       url(r'^test2/$',views.testpage2, name = "test2"),
 )

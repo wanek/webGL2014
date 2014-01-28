@@ -33,6 +33,7 @@ mat4.identity(rotationMatrix);
 window.onresize = function(event) {
   initLib.initGL();
   drawLib.drawScene();
+  redrawSVG();
 }
 var initLib = {  
   initGL: function() {
@@ -561,7 +562,6 @@ var drawLib = {
 function webGLStart() {
   var ua = navigator.userAgent.toLowerCase();
   isAndroid = ua.indexOf("android") > -1;
-  DisplayHelpDiv();
   if (!isAndroid) {
     document.getElementById("controls").style.display = "none";
   } else {
@@ -588,6 +588,7 @@ function webGLStart() {
     document.getElementById("reset").onmousedown = handlers.handleReset;
   }
   initLib.initGL();
+  DisplayHelpDiv();
   initLib.initShaders();
   bufferLib.initBuffers();
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
