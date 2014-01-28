@@ -101,28 +101,28 @@ function DisplayHelpDiv(){
       $("#jump-dialog").dialog("close");
     });
   } else {
-      $("#jump_button").click(function(){
-        $("#jump-dialog").dialog("open");
-      });
-      $("#help_button").click(function(){
-        $("#help-dialog").dialog("open");
-      });
-      $("#square").css({"stroke": "#E6E6E6"});
-      $("#square").click(function() {
-        if (modelChosen == 1) {
-          modelChosen = 0;
-          $("#square").css({"stroke": "#E6E6E6"});
-          $("#triangle").css({"stroke": "rgb(0,0,0)"});
-        }
-      });      
-      $("#triangle").click(function() {
-        if (modelChosen == 0) {
-          modelChosen = 1;
-          $("#square").css({"stroke": "rgb(0,0,0)"});
-          $("#triangle").css({"stroke": "#E6E6E6"});
-        }
-      });
-    }
+    $("#jump_button").click(function(){
+      $("#jump-dialog").dialog("open");
+    });
+    $("#help_button").click(function(){
+      $("#help-dialog").dialog("open");
+    });
+    $("#square").css({"stroke": "#E6E6E6"});
+    $("#square").click(function() {
+      if (modelChosen == 1) {
+        modelChosen = 0;
+        $("#square").css({"stroke": "#E6E6E6"});
+        $("#triangle").css({"stroke": "rgb(0,0,0)"});
+      }
+    });      
+    $("#triangle").click(function() {
+      if (modelChosen == 0) {
+        modelChosen = 1;
+        $("#square").css({"stroke": "rgb(0,0,0)"});
+        $("#triangle").css({"stroke": "#E6E6E6"});
+      }
+    });
+  }
 };
 function redrawSVG(){
   if (window.height < window.width){
@@ -140,19 +140,18 @@ function redrawSVG(){
   }
 }
 function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+  var cookieValue = null;
+  if (document.cookie && document.cookie != '') {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = jQuery.trim(cookies[i]);
+      if (cookie.substring(0, name.length + 1) == (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
     }
-    return cookieValue;
+  }
+  return cookieValue;
 }
 function csrfSafeMethod(method) {
   return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -163,20 +162,41 @@ function getPoly3Json(){
     crossDomain: false,
     beforeSend: function(xhr, settings) {
       if (!csrfSafeMethod(settings.type)) {
-          xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
       }
     },
     data: "",
+    accepts: "json",
     type: "POST",
-    accepts: 'json',
     url:"/test/",
-	  success:function(response){
+    success:function(response){
       bufferLib.JSONobject = response;
       bufferLib.initJSONBuffers();
     },
     error: function (xhr, ajaxOptions, thrownError) {
-        alert(xhr.status);
-        alert(thrownError);
+      alert("Error " + xhr.status + ": " + thrownError);
     }
-});
+  });
+}
+function getPoly3Json2(){
+  var csrftoken = getCookie('csrftoken');
+  $.ajax({
+    crossDomain: false,
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type)) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    },
+    data: "",
+    accepts: "json",
+    type: "POST",
+    url:"/test2/",
+    success:function(response){
+      bufferLib.JSONobject = response;
+      bufferLib.initJSONBuffers();
+    },
+    error: function (xhr, ajaxOptions, thrownError) {
+      alert("Error " + xhr.status + ": " + thrownError);
+    }
+  });
 }

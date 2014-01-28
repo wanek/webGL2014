@@ -1,13 +1,13 @@
-import json
 
 
 
-def vertex(x, y, z, u , v):
-    temp = {"x":x,"y":y,"z":z, "u":u,"v":v}
+
+def vertex(x, y, z, u, v):
+    temp = {"x":x,"y":y,"z":z, "u":u , "v":v }
     return temp
 
-def thing():
-    f = open("/home/binderd/webgl/polygons/169wray.poly3",'r')
+def thing2():
+    f = open("/home/binderd/webgl/polygons/165wray.poly3",'r')
     s = f.readline().split(' ')
     vertices = []
     numfaces = eval(s[3])
@@ -23,6 +23,8 @@ def thing():
              faces[i].append(vertices[eval(s[j])])
 
 
-    return json.dumps(faces)
+    
+    
+    return faces
 
-print thing()
+thing2()

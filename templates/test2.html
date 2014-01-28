@@ -1,4 +1,4 @@
-<html>
+y<html>
 <head>
 <title>Initial WebGL Modeling</title>
 <script type="text/javascript" src="{{STATIC_URL}}/JS/gl-matrix-min.js"></script>
@@ -455,7 +455,7 @@ function webGLStart() {
      }, false);
     document.getElementById("reset").onmousedown = handlers.handleReset;
   }
-  document.getElementById("cameraSVG").onmousedown= getPoly3Json;
+  document.getElementById("cameraSVG").onmousedown= getPoly3Json2;
   initLib.initGL();
   DisplayHelpDiv();
   initLib.initShaders();
@@ -478,7 +478,7 @@ function webGLStart() {
   <canvas id="canvas1" style="padding=0.0em" width="500" height="500">{% csrf_token %}</canvas>
   <svg id="cameraSVG" width="200" height="288">
   <rect id="cameraRect" width="48" height="288" stroke="black" stroke-width="1" fill="white" />
-  <circle id="cameraCircle"cx="24" cy="84" r="1" stroke="red" stroke-width="3" fill="red" />
+  <circle id="cameraCircle"cx="24" cy="84" r="1" stroke="blue" stroke-width="3" fill="red" />
 </svg>
   {% include "question.html" %}
 </body>

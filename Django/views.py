@@ -1,5 +1,3 @@
-# Create your views here.
-
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response
@@ -13,12 +11,11 @@ import json
 import urllib2
 from urlparse import urlparse
 import re
-import sys
 
 import sys
 sys.path.insert(0, '/home/binderd/webgl/scripts/')
-
-from GET import thing, vertex
+from fakecorners import *
+from TessGET import *
 
 def base_url(request):
     """Adds the base url to the context."""
@@ -32,5 +29,11 @@ def testpage(request):
     if request.method == "GET":
         return render_to_response('test.html', context_instance = RequestContext(request))
     elif request.method == "POST":
-        return HttpResponse(content = thing(),mimetype="application/json")        
+        return HttpResponse(content = getTessallatedData(),mimetype="application/json")        
+
+def testpage2(request):
+    if request.method == "GET":
+        return render_to_response('test2.html', context_instance = RequestContext(request))
+    elif request.method == "POST":
+        return HttpResponse(content = fake(),mimetype="application/json")        
 
